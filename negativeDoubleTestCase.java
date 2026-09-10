@@ -1,7 +1,7 @@
 public class TheRiddler{
     public static void main(String[] args) {    
         double num = -4.8;
-        int newNum = num;
+        double newNum = num;
         System.out.println(newNum);
 
         newNum *= 2;
