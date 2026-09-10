@@ -1,5 +1,8 @@
 public class TheRiddler{
-    public static void main(String[] args) {    
+    public static void main(String[] args) { 
+
+        // This test case was done by Hashim
+        
         int num = 8;
         int newNum = num;
         System.out.println(newNum);
