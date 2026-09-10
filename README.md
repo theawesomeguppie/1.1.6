@@ -5,7 +5,7 @@ This project uses arithmetic in Java by creating a mathematical riddle. The code
 ---
 
 ## Teamwork & Collaboration
-**Team Members:**
+**Team Members:** Bhavya Dwivedi, Trisha Agarwal, Ira Gupta, Hashim Riarh
 
 ---
 
@@ -15,7 +15,7 @@ This project uses arithmetic in Java by creating a mathematical riddle. The code
 * **Results:** Outputs the final calculated value (3).
 * **Test Values:** Tests different test cases (a negative double value, a negative integer value, the number one, the number zero, a positive double value, and a positive integer value) to ensure that the code works to output 3.
 
-* --
+---
 
 ## Screenshots
 ### Running the algorithm
