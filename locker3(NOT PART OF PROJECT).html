@@ -251,6 +251,109 @@ open up on your computer during our presentation!-->
   .case-file h3{ margin:0 0 4px; font-family:Georgia,serif; font-size:14.5px; }
   .case-file .meta{ font-size:11px; font-style:italic; color:var(--red); margin-bottom:6px; }
   .case-file p{ margin:0; font-size:11.5px; line-height:1.5; }
+  .case-file .drive-emoji{ font-size:15px; margin-right:4px; }
+  .view-doc-btn{
+    display:inline-block;
+    margin-top:10px;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:.03em;
+    padding:6px 12px;
+    border-radius:4px;
+    cursor:pointer;
+  }
+  .view-doc-btn:hover{ background:var(--red); }
+
+  /* ---------- Will document modal (photographed-document look) ---------- */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.82);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:30px;
+    z-index:100;
+  }
+  .modal-overlay.show{ display:flex; }
+  .modal-close{
+    position:absolute;
+    top:22px;
+    right:30px;
+    color:var(--cream);
+    font-size:30px;
+    line-height:1;
+    cursor:pointer;
+    font-family:Georgia,serif;
+    opacity:.75;
+  }
+  .modal-close:hover{ opacity:1; }
+  .will-photo{
+    position:relative;
+    transform:rotate(-1.4deg);
+    max-width:520px;
+    width:100%;
+  }
+  .will-paper{
+    position:relative;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.015) 0px, rgba(0,0,0,.015) 1px, transparent 1px, transparent 3px),
+      linear-gradient(135deg,#f6f1e4,#ece4cf 60%,#e8dfc6);
+    color:#2b2418;
+    padding:38px 40px 32px;
+    max-height:82vh;
+    overflow-y:auto;
+    box-shadow:0 30px 70px rgba(0,0,0,.65), 0 0 0 1px rgba(0,0,0,.05);
+    font-family:"Courier New",monospace;
+  }
+  .will-paper::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:radial-gradient(ellipse at 50% 40%, transparent 45%, rgba(0,0,0,.16) 100%);
+  }
+  .will-title{
+    text-align:center;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.06em;
+    margin-bottom:2px;
+  }
+  .will-subtitle{
+    text-align:center;
+    font-size:11px;
+    font-style:italic;
+    color:#5a5140;
+    margin-bottom:18px;
+  }
+  .will-paper h4{
+    font-size:11.5px;
+    letter-spacing:.04em;
+    margin:16px 0 6px;
+    border-bottom:1px solid #c9bfa3;
+    padding-bottom:2px;
+  }
+  .will-paper p{ font-size:11.5px; line-height:1.65; margin:0 0 10px; }
+  .will-sig{ margin-top:26px; font-size:11.5px; }
+  .will-sig .line{ border-top:1px solid #2b2418; width:220px; margin:26px 0 4px; }
+  .will-stamp{
+    position:absolute;
+    top:34px;
+    right:36px;
+    border:2px solid var(--red);
+    color:var(--red);
+    font-weight:700;
+    font-size:10.5px;
+    letter-spacing:.08em;
+    padding:4px 8px;
+    transform:rotate(8deg);
+    opacity:.85;
+  }
 
   .reset-row{ display:flex; justify-content:center; margin-top:20px; }
   .reset-btn{
@@ -291,10 +394,11 @@ open up on your computer during our presentation!-->
           <h3>An Amended Will</h3>
           <div class="meta">Dated days before his death</div>
           <p>Cuts Julian out of the shared patent and reports his faked death to the authorities. This is the motive.</p>
+          <button class="view-doc-btn" id="viewWillBtn">View Document</button>
         </div>
         <div class="case-file">
           <span class="stamp">EVIDENCE</span>
-          <h3>A Hidden Drive</h3>
+          <h3><span class="drive-emoji">&#128190;</span>A Hidden Drive</h3>
           <div class="meta">Footage from a secret office camera</div>
           <p>Never networked, so it survived when the building's main system was disabled. It captures the entire confrontation.</p>
         </div>
@@ -310,6 +414,40 @@ open up on your computer during our presentation!-->
     </div>
 
     <div class="solved-banner" id="solvedBanner">Case File No. 3 &mdash; SOLVED.</div>
+  </div>
+
+  <div class="modal-overlay" id="willModal">
+    <div class="modal-close" id="willClose">&times;</div>
+    <div class="will-photo">
+      <div class="will-paper">
+        <div class="will-stamp">EVIDENCE</div>
+        <div class="will-title">SECOND CODICIL TO THE LAST WILL<br/>AND TESTAMENT OF CORVIN J. ASHWORTH</div>
+        <div class="will-subtitle">Recovered from Locker 3, Faculty Archives</div>
+
+        <p>I, CORVIN J. ASHWORTH, being of sound mind and under no constraint or undue influence, do publish this Second Codicil to my Last Will and Testament, revoking any provision therein that conflicts with the terms set forth below.</p>
+
+        <h4>ARTICLE I &mdash; DISCOVERY</h4>
+        <p>I have determined, through documentary evidence in my sole possession, that my brother, JULIAN R. ASHWORTH, presumed deceased following a boating accident several years ago, is in fact living under an assumed identity. I have known this for eleven months and provided him financial support, believing it a private family matter.</p>
+
+        <h4>ARTICLE II &mdash; REVOCATION OF BEQUEST</h4>
+        <p>I have since learned that funds provided to Julian R. Ashworth were used to finance a legal challenge against my ownership of U.S. Patent No. 8,441,209, jointly developed by the two of us. In light of this, I revoke in full any bequest, share, or interest previously granted to Julian R. Ashworth, who shall receive nothing from my estate.</p>
+
+        <h4>ARTICLE III &mdash; DISCLOSURE TO AUTHORITIES</h4>
+        <p>It is my intention, effective upon execution of this document, to report the fraudulent death and assumed identity of Julian R. Ashworth to the appropriate authorities. Should anything happen to me before I do so personally, my executor is directed to deliver this document, together with the accompanying drive, to the police.</p>
+
+        <h4>ARTICLE IV &mdash; EXECUTOR</h4>
+        <p>I reaffirm the appointment of Whitfield &amp; Cole, LLP as Executor of my estate, to serve without bond.</p>
+
+        <p>IN WITNESS WHEREOF, I have signed this Second Codicil, affirming it to be my true intent.</p>
+
+        <div class="will-sig">
+          <div class="line"></div>
+          Corvin J. Ashworth
+          <div class="line"></div>
+          Witness
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="reset-row">
@@ -360,6 +498,15 @@ open up on your computer during our presentation!-->
   var lockIcon = document.getElementById('lockIcon');
   var lockerHint = document.getElementById('lockerHint');
   var solvedBanner = document.getElementById('solvedBanner');
+  var willModal = document.getElementById('willModal');
+  var willClose = document.getElementById('willClose');
+  var viewWillBtn = document.getElementById('viewWillBtn');
+
+  viewWillBtn.addEventListener('click', function(){ willModal.classList.add('show'); });
+  willClose.addEventListener('click', function(){ willModal.classList.remove('show'); });
+  willModal.addEventListener('click', function(e){
+    if (e.target === willModal) willModal.classList.remove('show');
+  });
   var resetBtn = document.getElementById('resetBtn');
 
   var doneSet = {};
@@ -491,6 +638,7 @@ open up on your computer during our presentation!-->
     lockIcon.classList.remove('popped');
     lockerHint.textContent = 'confirming evidence\u2026';
     solvedBanner.classList.remove('show');
+    willModal.classList.remove('show');
   }
 
   resetBtn.addEventListener('click', reset);
