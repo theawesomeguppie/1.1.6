@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Case File No. 3 — Run The Evidence</title>
+<style>
+  :root{
+    --bg:#141414;
+    --panel:#1e1b18;
+    --panel-line:#3a362f;
+    --paper:#f4efe2;
+    --paper-line:#c9bfa3;
+    --kraft:#8a6e4b;
+    --kraft-dark:#6b5638;
+    --ink:#2b2418;
+    --cream:#e8dfc8;
+    --cream-dim:#b9af98;
+    --gold:#c9a227;
+    --red:#8b1e1e;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--cream);
+    font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:20px;
+    min-height:100vh;
+  }
+  .stage{ width:100%; max-width:1180px; }
+  .eyebrow{ color:var(--gold); font-size:12px; font-weight:700; letter-spacing:.14em; margin-bottom:6px; }
+  h1{
+    font-family:Georgia,"Times New Roman",serif;
+    font-weight:700;
+    font-size:clamp(24px,3.2vw,34px);
+    margin:0 0 4px;
+    color:var(--cream);
+  }
+  .sub{ color:var(--cream-dim); font-size:14px; margin:0 0 18px; }
+
+  .progress-row{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+  .progress-track{ flex:1; height:6px; background:var(--panel); border:1px solid var(--panel-line); border-radius:4px; overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--red),var(--gold)); transition:width .5s ease; }
+  .progress-label{ font-size:12px; color:var(--cream-dim); white-space:nowrap; min-width:96px; text-align:right; }
+
+  .board{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+  @media (max-width:760px){ .board{ grid-template-columns:repeat(2,1fr); } }
+  .evidence-card{
+    text-align:left;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:12px 14px;
+    cursor:pointer;
+    color:var(--cream);
+    font-family:inherit;
+    position:relative;
+    transition:border-color .2s ease, transform .15s ease, background .2s ease;
+  }
+  .evidence-card:hover{ border-color:var(--gold); transform:translateY(-1px); }
+  .evidence-card:active{ transform:translateY(0); }
+  .evidence-card.active{ border-color:var(--gold); }
+  .evidence-card .chip{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:50%;
+    font-size:11px; font-weight:700; color:var(--cream); margin-bottom:8px;
+  }
+  .evidence-card .name{ font-size:14px; font-weight:600; margin-bottom:2px; }
+  .evidence-card .tc{ font-family:"Courier New",monospace; font-size:11.5px; color:var(--gold); }
+  .evidence-card .status{ position:absolute; top:10px; right:12px; font-size:11px; color:var(--cream-dim); }
+  .evidence-card.done{ border-color:var(--gold); background:#241f16; }
+  .evidence-card.done .status{ color:var(--gold); font-weight:700; }
+
+  .viewer{
+    background:#0d0d0d;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:16px 18px;
+    margin-bottom:22px;
+  }
+  .viewer .filename{
+    font-family:"Courier New",monospace;
+    font-size:12px;
+    color:var(--gold);
+    margin-bottom:10px;
+    padding-bottom:8px;
+    border-bottom:1px dashed var(--panel-line);
+  }
+  .viewer pre{
+    margin:0 0 12px;
+    font-family:"Courier New",monospace;
+    font-size:12.5px;
+    line-height:1.55;
+    color:#d7d0c0;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .viewer pre .kw{ color:#7fb8e0; }
+  .viewer pre .cm{ color:#7a8a70; font-style:italic; }
+  .viewer pre .nm{ color:#e0b060; }
+  .viewer .output-head{
+    font-size:11px;
+    color:var(--cream-dim);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    margin:10px 0 6px;
+  }
+  .viewer .output{
+    font-family:"Courier New",monospace;
+    font-size:13px;
+    line-height:1.7;
+    color:#cfead2;
+  }
+  .viewer .output .line{ opacity:0; animation:lineIn .2s ease forwards; }
+  .viewer .output .line.result{ color:var(--gold); font-weight:700; }
+  @keyframes lineIn{ from{ opacity:0; transform:translateY(2px);} to{ opacity:1; transform:translateY(0);} }
+  .viewer .placeholder{ color:var(--cream-dim); font-style:italic; font-size:13px; }
+
+  /* Locker — hidden entirely until all six are confirmed, then plays an unlock animation */
+  .locker-section{
+    display:none;
+    border-top:1px dashed var(--panel-line);
+    padding-top:20px;
+    margin-top:6px;
+  }
+  .locker-section.show{ display:block; }
+  .locker-title-row{
+    text-align:center;
+    margin-bottom:16px;
+  }
+  .locker-title{
+    font-family:Georgia,serif;
+    font-weight:700;
+    font-size:18px;
+    color:var(--gold);
+    letter-spacing:.04em;
+  }
+  .locker-hint{
+    font-size:12px;
+    color:var(--cream-dim);
+    margin-top:4px;
+    min-height:16px;
+  }
+
+  .locker-stage{
+    position:relative;
+    width:100%;
+    max-width:520px;
+    min-height:230px;
+    margin:0 auto 18px;
+    perspective:1000px;
+  }
+  .interior{
+    position:absolute;
+    inset:0;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .locker-door{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg,#2c2c2c,#1c1c1c);
+    border:2px solid var(--gold);
+    border-radius:14px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    transform-origin:left center;
+    transform-style:preserve-3d;
+    transition:transform 1s cubic-bezier(.6,.05,.2,1), opacity .6s ease;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+  }
+  .locker-door.shake{ animation:doorShake .5s ease; }
+  @keyframes doorShake{
+    0%,100%{ transform:translateX(0) rotate(0); }
+    20%{ transform:translateX(-4px) rotate(-1deg); }
+    40%{ transform:translateX(4px) rotate(1deg); }
+    60%{ transform:translateX(-3px) rotate(-1deg); }
+    80%{ transform:translateX(3px) rotate(1deg); }
+  }
+  .locker-door.open{
+    transform:rotateY(-112deg);
+    opacity:0;
+    pointer-events:none;
+  }
+  .lock-icon{ width:44px; height:38px; position:relative; }
+  .lock-icon .shackle{
+    position:absolute; top:0; left:50%;
+    width:24px; height:20px; margin-left:-12px;
+    border:5px solid var(--gold); border-bottom:none;
+    border-radius:13px 13px 0 0;
+    transition:transform .5s ease;
+    transform-origin:left center;
+  }
+  .lock-icon.popped .shackle{ transform:rotate(-35deg) translateY(-3px); }
+  .lock-icon .body{
+    position:absolute; bottom:0; left:50%;
+    width:38px; height:22px; margin-left:-19px;
+    background:var(--gold); border-radius:5px;
+  }
+  .door-label{
+    font-family:Georgia,serif;
+    font-weight:700;
+    letter-spacing:.08em;
+    color:var(--gold);
+    font-size:14px;
+  }
+
+  .solved-banner{
+    display:none;
+    text-align:center;
+    font-family:Georgia,serif;
+    font-size:14.5px;
+    color:var(--gold);
+  }
+  .solved-banner.show{ display:block; }
+
+  .case-file{
+    background:var(--paper);
+    border:1px solid var(--paper-line);
+    border-radius:6px;
+    padding:14px;
+    color:var(--ink);
+    box-shadow:0 8px 20px rgba(0,0,0,.35);
+    opacity:0;
+    transform:translateY(10px);
+    animation:fileIn .5s ease forwards;
+  }
+  .case-file:nth-child(1){ animation-delay:.1s; }
+  .case-file:nth-child(2){ animation-delay:.3s; }
+  @keyframes fileIn{ to{ opacity:1; transform:translateY(0); } }
+  .case-file .stamp{
+    display:inline-block; font-size:10px; font-weight:700; letter-spacing:.06em;
+    color:var(--red); border:1.5px solid var(--red); border-radius:3px;
+    padding:2px 6px; transform:rotate(-4deg); margin-bottom:6px;
+  }
+  .case-file h3{ margin:0 0 4px; font-family:Georgia,serif; font-size:14.5px; }
+  .case-file .meta{ font-size:11px; font-style:italic; color:var(--red); margin-bottom:6px; }
+  .case-file p{ margin:0; font-size:11.5px; line-height:1.5; }
+
+  .reset-row{ display:flex; justify-content:center; margin-top:20px; }
+  .reset-btn{
+    background:transparent; border:1px solid var(--panel-line); color:var(--cream-dim);
+    font-size:12px; padding:6px 14px; border-radius:20px; cursor:pointer; font-family:inherit;
+  }
+  .reset-btn:hover{ border-color:var(--gold); color:var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="eyebrow">CASE FILE NO. 3</div>
+  <h1>Run The Evidence</h1>
+  <p class="sub">Click each piece of evidence to view and run its exact source code.</p>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 6 confirmed</div>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <div class="viewer" id="viewer">
+    <div class="placeholder">Select a piece of evidence to view and run its source.</div>
+  </div>
+
+  <div class="locker-section" id="lockerSection">
+    <div class="locker-title-row">
+      <div class="locker-title">LOCKER 3</div>
+      <div class="locker-hint" id="lockerHint">confirming evidence&hellip;</div>
+    </div>
+
+    <div class="locker-stage">
+      <div class="interior" id="lockerInterior">
+        <div class="case-file">
+          <span class="stamp">EVIDENCE</span>
+          <h3>An Amended Will</h3>
+          <div class="meta">Dated days before his death</div>
+          <p>Cuts Julian out of the shared patent and reports his faked death to the authorities. This is the motive.</p>
+        </div>
+        <div class="case-file">
+          <span class="stamp">EVIDENCE</span>
+          <h3>A Hidden Drive</h3>
+          <div class="meta">Footage from a secret office camera</div>
+          <p>Never networked, so it survived when the building's main system was disabled. It captures the entire confrontation.</p>
+        </div>
+      </div>
+
+      <div class="locker-door" id="lockerDoor">
+        <div class="lock-icon" id="lockIcon">
+          <div class="shackle"></div>
+          <div class="body"></div>
+        </div>
+        <div class="door-label">LOCKER 3</div>
+      </div>
+    </div>
+
+    <div class="solved-banner" id="solvedBanner">Case File No. 3 &mdash; SOLVED.</div>
+  </div>
+
+  <div class="reset-row">
+    <button class="reset-btn" id="resetBtn">Reset evidence board</button>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  // Exact source from github.com/theawesomeguppie/1.1.6 — only the num/type/author differ per file.
+  function sourceFor(type, value, author){
+    return (
+'public class TheRiddler{\n\n' +
+'    public static void main(String[] args) {\n\n' +
+'        // This test case was done by ' + author + '\n\n' +
+'        ' + type + ' num = ' + value + ';\n' +
+'        ' + type + ' newNum = num;\n' +
+'        System.out.println(newNum);\n' +
+'        newNum *= 2;\n' +
+'        System.out.println(newNum);\n' +
+'        newNum += 6;\n' +
+'        System.out.println(newNum);\n' +
+'        newNum /= 2;\n' +
+'        System.out.println(newNum);\n' +
+'        newNum -= num;\n' +
+'        System.out.println(newNum);\n\n' +
+'    }\n\n' +
+'}'
+    );
+  }
+
+  var evidence = [
+    { name:"Dana Okafor",     file:"positiveIntTestCase.java",    role:"positiveIntTestCase",    type:"int",    input:9,        author:"Hashim", color:"#3f5c76" },
+    { name:"Marcus Ilan",     file:"negativeIntTestCase.java",    role:"negativeIntTestCase",    type:"int",    input:-2,       author:"Trisha", color:"#6b6b6b" },
+    { name:"Priya Shah",      file:"positiveDoubleTestCase.java", role:"positiveDoubleTestCase", type:"double", input:14208.47, author:"Ira",     color:"#b08d2e" },
+    { name:"Elena Voss",      file:"negativeDoubleTestCase.java", role:"negativeDoubleTestCase", type:"double", input:-212.09,  author:"Ira",     color:"#8b1e1e" },
+    { name:"Walt Reyes",      file:"zeroTestCase.java",           role:"zeroTestCase",           type:"int",    input:0,        author:"Bhavya",  color:"#3e7048" },
+    { name:"Julian Ashworth", file:"oneTestCase.java",            role:"oneTestCase",            type:"int",    input:1,        author:"Bhavya",  color:"#2b2b2b" }
+  ];
+
+  var board = document.getElementById('board');
+  var viewer = document.getElementById('viewer');
+  var progressFill = document.getElementById('progressFill');
+  var progressLabel = document.getElementById('progressLabel');
+  var lockerSection = document.getElementById('lockerSection');
+  var lockerDoor = document.getElementById('lockerDoor');
+  var lockIcon = document.getElementById('lockIcon');
+  var lockerHint = document.getElementById('lockerHint');
+  var solvedBanner = document.getElementById('solvedBanner');
+  var resetBtn = document.getElementById('resetBtn');
+
+  var doneSet = {};
+  var busy = false;
+
+  function escapeHtml(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function highlight(code){
+    var escaped = escapeHtml(code);
+    var token = /(\/\/[^\n]*)|\b(public|class|static|void|main|String|int|double|args|new)\b|\b(-?\d+\.?\d*)\b/g;
+    return escaped.replace(token, function(match, cm, kw, nm){
+      if (cm) return '<span class="cm">' + cm + '</span>';
+      if (kw) return '<span class="kw">' + kw + '</span>';
+      if (nm) return '<span class="nm">' + nm + '</span>';
+      return match;
+    });
+  }
+
+  function fmt(n){
+    return (Math.round(n * 100) / 100).toString();
+  }
+
+  function buildBoard(){
+    board.innerHTML = '';
+    evidence.forEach(function(ev, i){
+      var btn = document.createElement('button');
+      btn.className = 'evidence-card';
+      btn.innerHTML =
+        '<div class="chip" style="background:' + ev.color + '">' +
+          ev.name.split(' ').map(function(p){ return p[0]; }).join('').slice(0,2) +
+        '</div>' +
+        '<div class="status">pending</div>' +
+        '<div class="name">' + ev.name + '</div>' +
+        '<div class="tc">' + ev.role + '</div>';
+      btn.addEventListener('click', function(){ runEvidence(i, btn); });
+      board.appendChild(btn);
+    });
+  }
+
+  function updateProgress(){
+    var count = Object.keys(doneSet).length;
+    progressFill.style.width = (count / 6 * 100) + '%';
+    progressLabel.textContent = count + ' / 6 confirmed';
+    return count;
+  }
+
+  function runEvidence(i, btn){
+    if (busy) return;
+    busy = true;
+
+    document.querySelectorAll('.evidence-card').forEach(function(c){ c.classList.remove('active'); });
+    btn.classList.add('active');
+
+    var ev = evidence[i];
+    var code = sourceFor(ev.type, ev.input, ev.author);
+
+    viewer.innerHTML =
+      '<div class="filename">' + ev.file + '</div>' +
+      '<pre>' + highlight(code) + '</pre>' +
+      '<div class="output-head">Output</div>' +
+      '<div class="output" id="outputArea"></div>';
+
+    var outputArea = document.getElementById('outputArea');
+    var n = ev.input;
+    var steps = [
+      { text: fmt(n), result:false },
+      { text: fmt(n * 2), result:false },
+      { text: fmt(n * 2 + 6), result:false },
+      { text: fmt((n * 2 + 6) / 2), result:false },
+      { text: fmt((n * 2 + 6) / 2 - n), result:true }
+    ];
+
+    var delay = 0;
+    steps.forEach(function(step){
+      setTimeout(function(){
+        var line = document.createElement('div');
+        line.className = 'line' + (step.result ? ' result' : '');
+        line.textContent = step.text;
+        outputArea.appendChild(line);
+        if (step.result){
+          doneSet[i] = true;
+          btn.classList.add('done');
+          btn.querySelector('.status').textContent = 'confirmed';
+          var count = updateProgress();
+          busy = false;
+          if (count === 6){
+            showLocker();
+          }
+        }
+      }, delay);
+      delay += 260;
+    });
+  }
+
+  function showLocker(){
+    lockerSection.classList.add('show');
+    lockerHint.textContent = 'confirming evidence\u2026';
+
+    setTimeout(function(){
+      lockerHint.textContent = 'every result matches\u2026';
+      lockerDoor.classList.add('shake');
+    }, 300);
+
+    setTimeout(function(){
+      lockIcon.classList.add('popped');
+      lockerHint.textContent = 'unlocking\u2026';
+    }, 700);
+
+    setTimeout(function(){
+      lockerDoor.classList.add('open');
+    }, 1300);
+
+    setTimeout(function(){
+      lockerHint.textContent = '';
+      solvedBanner.classList.add('show');
+    }, 1900);
+  }
+
+  function reset(){
+    doneSet = {};
+    busy = false;
+    buildBoard();
+    viewer.innerHTML = '<div class="placeholder">Select a piece of evidence to view and run its source.</div>';
+    updateProgress();
+    lockerSection.classList.remove('show');
+    lockerDoor.classList.remove('shake','open');
+    lockIcon.classList.remove('popped');
+    lockerHint.textContent = 'confirming evidence\u2026';
+    solvedBanner.classList.remove('show');
+  }
+
+  resetBtn.addEventListener('click', reset);
+
+  buildBoard();
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>
